@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: loyalty-platform
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/loyalty}
+    username: ${SPRING_DATASOURCE_USERNAME:loyalty}
+    password: ${SPRING_DATASOURCE_PASSWORD:loyalty}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: ${GITHUB_CLIENT_ID:demo-client-id}
+            client-secret: ${GITHUB_CLIENT_SECRET:demo-client-secret}
+            scope: read:user,user:email
+loyalty:
+  jwt:
+    secret: ${JWT_SECRET:course-project-demo-secret-key-which-is-long-enough-for-hmac-sha256}
+    access-token-minutes: 30
+    refresh-token-days: 14
+integrations:
+  github:
+    base-url: https://api.github.com
+  exchange:
+    base-url: https://api.exchangerate.host
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+logging:
+  pattern:
+    console: '{"time":"%d{yyyy-MM-dd HH:mm:ss}","level":"%level","logger":"%logger","message":"%msg"}%n'
