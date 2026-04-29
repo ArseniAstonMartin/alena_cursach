@@ -5,8 +5,8 @@ import { z } from 'zod';
 import { login, registerCustomer } from '../api/loyaltyApi';
 import { useAuthStore } from '../store/authStore';
 
-const loginSchema = z.object({ email: z.string().email(), password: z.string().min(6) });
-const registerSchema = loginSchema.extend({ fullName: z.string().min(3) });
+const loginSchema = z.object({ email: z.string().email(), password: z.string().min(4) });
+const registerSchema = z.object({ fullName: z.string().min(3), email: z.string().email(), password: z.string().min(6) });
 type LoginForm = z.infer<typeof loginSchema>;
 type RegisterForm = z.infer<typeof registerSchema>;
 
@@ -36,7 +36,7 @@ export function LoginPage() {
 
   const onLogin = loginForm.handleSubmit((values) => {
     const parsed = loginSchema.safeParse(values);
-    if (!parsed.success) return setMessage('Введите корректный email и пароль не короче 6 символов.');
+    if (!parsed.success) return setMessage('Введите корректный email и пароль не короче 4 символов.');
     return applySession(() => login(parsed.data.email, parsed.data.password));
   });
 
