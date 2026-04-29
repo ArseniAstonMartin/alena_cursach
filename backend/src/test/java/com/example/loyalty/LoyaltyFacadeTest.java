@@ -3,6 +3,7 @@ package com.example.loyalty;
 import com.example.loyalty.application.port.*;
 import com.example.loyalty.application.service.CustomerQueryService;
 import com.example.loyalty.application.service.LoyaltyFacade;
+import com.example.loyalty.application.service.PurchaseInsightService;
 import com.example.loyalty.application.dto.LoyaltyDtos.RedemptionRequest;
 import com.example.loyalty.domain.model.Customer;
 import com.example.loyalty.domain.model.LoyaltyAccount;
@@ -22,8 +23,9 @@ class LoyaltyFacadeTest {
     private final RewardTransactionRepository transactions = mock(RewardTransactionRepository.class);
     private final OfferRepository offers = mock(OfferRepository.class);
     private final ClaimedOfferRepository claimedOffers = mock(ClaimedOfferRepository.class);
+    private final PurchaseInsightService purchaseInsights = mock(PurchaseInsightService.class);
     private final JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
-    private final LoyaltyFacade facade = new LoyaltyFacade(customerQueryService, accounts, transactions, offers, claimedOffers, new OfferStrategyFactory(), jdbcTemplate);
+    private final LoyaltyFacade facade = new LoyaltyFacade(customerQueryService, accounts, transactions, offers, claimedOffers, new OfferStrategyFactory(), purchaseInsights, jdbcTemplate);
 
     @Test
     void redeemCreatesCertificateAndDecreasesBalance() {
