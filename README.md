@@ -61,7 +61,7 @@ Demo credentials:
 - Each offer response includes status (`AVAILABLE`, `CLAIMED`, `USED`), next-step instructions and a personalization reason, so the UI can show why it was recommended and how it will be applied.
 - Every purchase reward is stored in `purchase_reward_breakdowns` with an explanation.
 - Points can be redeemed through `redemption_orders`; the current rule is 10 points = 1 discount unit, minimum 50 points.
-- Redeemed certificates are category-bound by purchase history: by default, a certificate is issued for the customer's strongest category.
+- Redeemed certificates are category-bound by purchase history: by default, a certificate is issued for an underdeveloped strategic category, not the strongest one, so the business can grow cross-category behavior.
 - Redeemed certificates are stored in the customer's wallet with `ACTIVE`, `USED` or `EXPIRED` status.
 - A purchase can apply one active certificate only to a matching category; the purchase stores gross amount, discount amount, final amount and certificate code.
 

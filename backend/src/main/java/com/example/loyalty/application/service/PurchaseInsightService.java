@@ -4,26 +4,34 @@ import com.example.loyalty.domain.model.Customer;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class PurchaseInsightService {
+    private static final Set<String> STRATEGIC_CATEGORIES = Set.of("GROCERY", "BOOKS", "SPORT");
     private final JdbcTemplate jdbcTemplate;
 
     public PurchaseInsightService(JdbcTemplate jdbcTemplate) { this.jdbcTemplate = jdbcTemplate; }
 
     public PurchaseProfile profile(Customer customer) {
         List<CategoryStat> categories = jdbcTemplate.query("""
-            select p.category, count(*) as purchases_count, coalesce(sum(pi.quantity * pi.unit_price),0) as spent
+            select p.category,
+                   count(*) as purchases_count,
+                   coalesce(sum(pi.quantity * pi.unit_price),0) as spent,
+                   max(pu.purchased_at) as last_purchase_at
             from purchases pu
             join purchase_items pi on pi.purchase_id = pu.id
             join products p on p.id = pi.product_id
             where pu.customer_id = ?
             group by p.category
             order by spent desc, purchases_count desc
-            """, (rs, rowNum) -> new CategoryStat(rs.getString("category"), rs.getInt("purchases_count"), rs.getBigDecimal("spent")), customer.getId());
+            """, (rs, rowNum) -> new CategoryStat(rs.getString("category"), rs.getInt("purchases_count"), rs.getBigDecimal("spent"), rs.getObject("last_purchase_at", OffsetDateTime.class)), customer.getId());
         Integer purchaseCount = jdbcTemplate.queryForObject("select count(*) from purchases where customer_id = ?", Integer.class, customer.getId());
         BigDecimal totalSpent = jdbcTemplate.queryForObject("select coalesce(sum(total_amount),0) from purchases where customer_id = ?", BigDecimal.class, customer.getId());
         OffsetDateTime lastPurchaseAt = jdbcTemplate.query("select max(purchased_at) from purchases where customer_id = ?", rs -> rs.next() ? rs.getObject(1, OffsetDateTime.class) : null, customer.getId());
@@ -37,34 +45,63 @@ public class PurchaseInsightService {
             return 30 + loyalty;
         }
         if (profile.purchaseCount() == 0) return 20;
-        return 12;
+        return 18;
     }
 
     public String explanation(PurchaseProfile profile, String targetCategory) {
         Optional<CategoryStat> category = profile.categories().stream().filter(stat -> stat.category().equals(targetCategory)).findFirst();
         if (category.isPresent()) {
-            return "Вы часто покупаете " + targetCategory + ": " + category.get().purchaseCount() + " покупок на " + category.get().spent().intValue() + " ₽. Поэтому оффер поднят выше.";
+            return "В истории есть интерес к " + targetCategory + ": " + category.get().purchaseCount() + " покупок на " + category.get().spent().intValue() + " ₽. Оффер усиливает категорию с подтвержденным спросом.";
         }
         if (profile.purchaseCount() == 0) return "Истории покупок пока нет, поэтому это стартовое предложение для знакомства с категорией.";
         String top = profile.categories().isEmpty() ? "покупкам" : profile.categories().getFirst().category();
-        return "В истории преобладает " + top + ", а " + targetCategory + " почти не покупалась. Это предложение расширяет интересы клиента.";
+        return "В истории преобладает " + top + ", а " + targetCategory + " почти не покупалась. Оффер помогает бизнесу развивать новую категорию для клиента.";
     }
 
     public String recommendedCertificateCategory(PurchaseProfile profile) {
-        return profile.categories().isEmpty() ? "ANY" : profile.categories().getFirst().category();
+        if (profile.purchaseCount() == 0) return "ANY";
+        return STRATEGIC_CATEGORIES.stream()
+            .min(Comparator.comparing(category -> profile.categories().stream()
+                .filter(stat -> stat.category().equals(category))
+                .map(CategoryStat::spent)
+                .findFirst()
+                .orElse(BigDecimal.ZERO)))
+            .orElse("ANY");
     }
 
     public String certificateReason(PurchaseProfile profile, String category) {
-        if ("ANY".equals(category)) {
-            return "Сертификат универсальный, потому что истории покупок пока недостаточно для выбора любимой категории.";
+        if ("ANY".equals(category)) return "Сертификат универсальный, потому что истории покупок пока недостаточно.";
+        Optional<CategoryStat> stat = profile.categories().stream().filter(item -> item.category().equals(category)).findFirst();
+        if (stat.isPresent()) {
+            return "Сертификат выдан на " + category + ": это категория с меньшей долей в вашей истории (" + stat.get().spent().intValue() + " ₽), поэтому бизнес стимулирует следующий интерес.";
         }
-        return profile.categories().stream()
-            .filter(stat -> stat.category().equals(category))
-            .findFirst()
-            .map(stat -> "Сертификат привязан к " + category + ", потому что это ваша сильная категория: " + stat.purchaseCount() + " покупок на " + stat.spent().intValue() + " ₽.")
-            .orElse("Сертификат привязан к " + category + " как к категории для развития покупательского интереса.");
+        return "Сертификат выдан на " + category + ", потому что вы почти не покупали эту категорию. Это персональная рекомендация расширить покупки.";
     }
 
-    public record CategoryStat(String category, int purchaseCount, BigDecimal spent) {}
+    public BigDecimal averageCheck(PurchaseProfile profile) {
+        if (profile.purchaseCount() == 0) return BigDecimal.ZERO;
+        return profile.totalSpent().divide(BigDecimal.valueOf(profile.purchaseCount()), 2, RoundingMode.HALF_UP);
+    }
+
+    public BigDecimal sharePercent(PurchaseProfile profile, CategoryStat category) {
+        if (profile.totalSpent().compareTo(BigDecimal.ZERO) == 0) return BigDecimal.ZERO;
+        return category.spent().multiply(BigDecimal.valueOf(100)).divide(profile.totalSpent(), 2, RoundingMode.HALF_UP);
+    }
+
+    public String frequencyLabel(PurchaseProfile profile) {
+        if (profile.purchaseCount() == 0 || profile.lastPurchaseAt() == null) return "нет истории";
+        long days = Math.max(1, Duration.between(profile.lastPurchaseAt(), OffsetDateTime.now()).toDays());
+        if (days <= 3) return "покупает недавно";
+        if (days <= 14) return "активный клиент";
+        if (days <= 45) return "умеренная активность";
+        return "риск оттока";
+    }
+
+    public BigDecimal categoryAverageCheck(CategoryStat category) {
+        if (category.purchaseCount() == 0) return BigDecimal.ZERO;
+        return category.spent().divide(BigDecimal.valueOf(category.purchaseCount()), 2, RoundingMode.HALF_UP);
+    }
+
+    public record CategoryStat(String category, int purchaseCount, BigDecimal spent, OffsetDateTime lastPurchaseAt) {}
     public record PurchaseProfile(List<CategoryStat> categories, int purchaseCount, BigDecimal totalSpent, OffsetDateTime lastPurchaseAt) {}
 }
