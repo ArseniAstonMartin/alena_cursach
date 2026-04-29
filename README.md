@@ -45,6 +45,17 @@ Demo credentials:
 15. View recommendations from external integrations.
 16. Admin view registered external integrations.
 17. View reward transaction history.
+18. View loyalty program rules by category and segment.
+19. Receive explained reward accruals after purchases.
+20. Redeem points into discount certificates with confirmation codes.
+
+## Loyalty business rules
+
+- Category cashback is stored in `reward_rules` and can differ per product category.
+- Segment multipliers are stored in `customer_segment_thresholds`.
+- Activated offers add fixed bonus points when their category matches a purchase.
+- Every purchase reward is stored in `purchase_reward_breakdowns` with an explanation.
+- Points can be redeemed through `redemption_orders`; the current rule is 10 points = 1 discount unit, minimum 50 points.
 
 ## Architecture notes
 
@@ -66,4 +77,4 @@ Patterns beyond Repository/Unit of Work:
 
 Java/OOP requirements included: generics (`Command<R>`, `AbstractUseCase<I,O>`), abstract class, custom interfaces, lambdas/Stream API, DTO records, Optional repositories, custom exceptions, custom annotation plus Reflection API in `IntegrationRegistry`.
 
-Database schema has more than eight related 3NF tables: customers, roles, customer_roles, merchants, products, purchases, purchase_items, loyalty_accounts, reward_transactions, offers, claimed_offers and refresh_tokens.
+Database schema has more than eight related 3NF tables: customers, roles, customer_roles, merchants, products, purchases, purchase_items, loyalty_accounts, reward_transactions, offers, claimed_offers, refresh_tokens, reward_rules, redemption_orders, purchase_reward_breakdowns and customer_segment_thresholds. Flyway migrations are split into V1-V8.

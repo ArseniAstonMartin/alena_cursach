@@ -2,8 +2,12 @@ package com.example.loyalty.application.dto;
 
 import com.example.loyalty.domain.model.CustomerSegment;
 import com.example.loyalty.domain.model.RewardTransactionType;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 public final class LoyaltyDtos {
     private LoyaltyDtos() {}
@@ -11,4 +15,9 @@ public final class LoyaltyDtos {
     public record RewardTransactionDto(Long id, RewardTransactionType type, int points, String reason, OffsetDateTime createdAt) {}
     public record OfferDto(Long id, String title, String description, String targetCategory, int bonusPoints, LocalDate validUntil, int personalizationScore) {}
     public record RecommendationDto(String title, String description, String source) {}
+    public record RedemptionRequest(@Min(50) int points, @NotBlank String rewardName) {}
+    public record RedemptionDto(int pointsSpent, BigDecimal discountAmount, int remainingBalance, String confirmationCode, String rewardName) {}
+    public record RewardRuleDto(String category, BigDecimal cashbackPercent, String description) {}
+    public record SegmentRuleDto(CustomerSegment segment, BigDecimal minTotalSpend, BigDecimal multiplier, String description) {}
+    public record LoyaltyProgramDto(List<RewardRuleDto> rewardRules, List<SegmentRuleDto> segmentRules, String redemptionRule) {}
 }
