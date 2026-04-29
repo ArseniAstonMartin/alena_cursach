@@ -10,59 +10,63 @@ const registerSchema = loginSchema.extend({ fullName: z.string().min(3) });
 type LoginForm = z.infer<typeof loginSchema>;
 type RegisterForm = z.infer<typeof registerSchema>;
 
-function errorMessage(error: unknown) {
-  if (error instanceof AxiosError) return error.response?.data?.detail ?? error.message;
-  return 'Request failed. Check that backend is running on port 8080.';
+function getError(error: unknown) {
+  if (error instanceof AxiosError) return error.response?.data?.detail ?? 'Сервер отклонил запрос. Проверьте данные.';
+  return 'Не удалось выполнить запрос. Проверьте backend на порту 8080.';
 }
 
 export function LoginPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [serverError, setServerError] = useState('');
+  const [message, setMessage] = useState('');
   const setSession = useAuthStore((state) => state.setSession);
   const loginForm = useForm<LoginForm>({ defaultValues: { email: 'alice@example.com', password: 'password123' } });
   const registerForm = useForm<RegisterForm>({ defaultValues: { fullName: '', email: '', password: '' } });
 
-  const submitLogin = loginForm.handleSubmit(async (values) => {
-    setServerError('');
+  async function applySession(action: () => Promise<Awaited<ReturnType<typeof login>>>) {
+    setMessage('');
+    try {
+      const session = await action();
+      setSession(session.accessToken, session.refreshToken, session.customer);
+    } catch (error) {
+      setMessage(getError(error));
+    }
+  }
+
+  const onLogin = loginForm.handleSubmit((values) => {
     const parsed = loginSchema.safeParse(values);
-    if (!parsed.success) return setServerError('Введите корректный email и пароль от 6 символов.');
-    try {
-      const session = await login(parsed.data.email, parsed.data.password);
-      setSession(session.accessToken, session.refreshToken, session.customer);
-    } catch (error) { setServerError(errorMessage(error)); }
+    if (!parsed.success) return setMessage('Введите корректный email и пароль не короче 6 символов.');
+    return applySession(() => login(parsed.data.email, parsed.data.password));
   });
 
-  const submitRegister = registerForm.handleSubmit(async (values) => {
-    setServerError('');
+  const onRegister = registerForm.handleSubmit((values) => {
     const parsed = registerSchema.safeParse(values);
-    if (!parsed.success) return setServerError('Заполните имя, корректный email и пароль от 6 символов.');
-    try {
-      const session = await registerCustomer(parsed.data);
-      setSession(session.accessToken, session.refreshToken, session.customer);
-    } catch (error) { setServerError(errorMessage(error)); }
+    if (!parsed.success) return setMessage('Заполните имя, email и пароль не короче 6 символов.');
+    return applySession(() => registerCustomer(parsed.data));
   });
 
-  return <section className="auth-layout">
-    <div className="hero-panel">
-      <p className="eyebrow">Personalized loyalty</p>
-      <h2>Покупки превращаются в баллы, сегменты и умные предложения</h2>
-      <p>Демо-пользователь уже создан: <b>alice@example.com</b> / <b>password123</b>. Можно также зарегистрировать нового клиента.</p>
-      <div className="hero-stats"><span><b>12</b> DB tables</span><span><b>JWT</b> auth</span><span><b>REST</b> API</span></div>
+  return <section className="auth-page">
+    <div className="auth-info">
+      <p className="label">Авторизация</p>
+      <h1>Войдите или создайте клиента</h1>
+      <p>После входа откроются баланс баллов, история покупок, персональные предложения и возможность покупать товары из каталога.</p>
+      <div className="demo-box"><b>Демо:</b><span>alice@example.com</span><span>password123</span></div>
     </div>
-    <div className="auth-card">
-      <div className="tabs"><button className={mode === 'login' ? 'active' : ''} onClick={() => { setMode('login'); setServerError(''); }}>Войти</button><button className={mode === 'register' ? 'active' : ''} onClick={() => { setMode('register'); setServerError(''); }}>Зарегистрироваться</button></div>
-      {mode === 'login' ? <form onSubmit={submitLogin} className="form-stack">
-        <label>Email<input placeholder="alice@example.com" {...loginForm.register('email')} /></label>
-        <label>Password<input placeholder="password123" type="password" {...loginForm.register('password')} /></label>
-        <button className="primary" disabled={loginForm.formState.isSubmitting}>{loginForm.formState.isSubmitting ? 'Входим...' : 'Войти в платформу'}</button>
-      </form> : <form onSubmit={submitRegister} className="form-stack">
-        <label>Full name<input placeholder="Анна Иванова" {...registerForm.register('fullName')} /></label>
-        <label>Email<input placeholder="anna@example.com" {...registerForm.register('email')} /></label>
-        <label>Password<input type="password" placeholder="минимум 6 символов" {...registerForm.register('password')} /></label>
-        <button className="primary" disabled={registerForm.formState.isSubmitting}>{registerForm.formState.isSubmitting ? 'Создаем...' : 'Создать аккаунт'}</button>
+    <div className="card auth-form">
+      <div className="tabs">
+        <button type="button" className={mode === 'login' ? 'active' : ''} onClick={() => { setMode('login'); setMessage(''); }}>Вход</button>
+        <button type="button" className={mode === 'register' ? 'active' : ''} onClick={() => { setMode('register'); setMessage(''); }}>Регистрация</button>
+      </div>
+      {mode === 'login' ? <form onSubmit={onLogin} className="form">
+        <label>Email<input {...loginForm.register('email')} /></label>
+        <label>Пароль<input type="password" {...loginForm.register('password')} /></label>
+        <button className="primary" disabled={loginForm.formState.isSubmitting}>{loginForm.formState.isSubmitting ? 'Входим...' : 'Войти'}</button>
+      </form> : <form onSubmit={onRegister} className="form">
+        <label>Имя<input placeholder="Иван Иванов" {...registerForm.register('fullName')} /></label>
+        <label>Email<input placeholder="ivan@example.com" {...registerForm.register('email')} /></label>
+        <label>Пароль<input type="password" placeholder="минимум 6 символов" {...registerForm.register('password')} /></label>
+        <button className="primary" disabled={registerForm.formState.isSubmitting}>{registerForm.formState.isSubmitting ? 'Создаем...' : 'Зарегистрироваться'}</button>
       </form>}
-      {serverError ? <p className="error-box">{serverError}</p> : null}
-      <p className="hint">Если вход не проходит, проверьте что backend запущен на 8080 и frontend открыт на 5173.</p>
+      {message ? <div className="alert error">{message}</div> : null}
     </div>
   </section>;
 }

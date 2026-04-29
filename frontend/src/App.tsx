@@ -6,37 +6,49 @@ import { DashboardPage } from './pages/DashboardPage';
 import { CatalogPage } from './pages/CatalogPage';
 import { OffersPage } from './pages/OffersPage';
 
-function Protected({ children }: { children: ReactElement }) {
-  return useAuthStore.getState().customer ? children : <Navigate to="/login" replace />;
+function RequireAuth({ children }: { children: ReactElement }) {
+  const customer = useAuthStore((state) => state.customer);
+  return customer ? children : <Navigate to="/login" replace />;
 }
 
 export default function App() {
   const { customer, logout } = useAuthStore();
-  return <div className="app-shell">
-    <aside className="sidebar">
-      <div className="brand"><span className="brand-mark">LP</span><div><b>Loyalty Pro</b><small>personal rewards</small></div></div>
-      <nav className="nav-links">
-        <NavLink to="/">Overview</NavLink>
-        <NavLink to="/catalog">Smart catalog</NavLink>
-        <NavLink to="/offers">Personal offers</NavLink>
+  return <div className="layout">
+    <header className="header">
+      <NavLink to="/" className="logo"><span>LP</span><div><b>Loyalty Platform</b><small>умные предложения и баллы</small></div></NavLink>
+      <nav className="menu">
+        <NavLink to="/">Главная</NavLink>
+        <NavLink to="/catalog">Каталог</NavLink>
+        <NavLink to="/offers">Предложения</NavLink>
       </nav>
-      <div className="sidebar-card">
-        <span>Course project</span>
-        <strong>Distributed information systems</strong>
-        <p>Spring Boot API + React SPA + PostgreSQL + Redis</p>
+      <div className="header-actions">
+        {customer ? <><span className="profile-chip">{customer.fullName} · {customer.segment}</span><button className="secondary" onClick={logout}>Выйти</button></> : <NavLink className="primary-link" to="/login">Войти</NavLink>}
       </div>
-    </aside>
-    <main className="content">
-      <header className="topbar">
-        <div><p className="eyebrow">Loyalty platform</p><h1>{customer ? `Welcome, ${customer.fullName}` : 'Personalized loyalty workspace'}</h1></div>
-        {customer ? <div className="user-pill"><span>{customer.segment}</span><button className="ghost" onClick={logout}>Logout</button></div> : <NavLink className="button-link" to="/login">Sign in</NavLink>}
-      </header>
+    </header>
+    <main className="main">
       <Routes>
         <Route path="/login" element={customer ? <Navigate to="/" replace /> : <LoginPage />} />
-        <Route path="/catalog" element={<Protected><CatalogPage /></Protected>} />
-        <Route path="/offers" element={<Protected><OffersPage /></Protected>} />
-        <Route path="/" element={<Protected><DashboardPage /></Protected>} />
+        <Route path="/catalog" element={<CatalogPage />} />
+        <Route path="/offers" element={<RequireAuth><OffersPage /></RequireAuth>} />
+        <Route path="/" element={customer ? <DashboardPage /> : <LandingPage />} />
       </Routes>
     </main>
   </div>;
+}
+
+function LandingPage() {
+  return <section className="landing">
+    <div className="landing-text">
+      <p className="label">Курсовой проект</p>
+      <h1>Платформа лояльности с персональными предложениями</h1>
+      <p>Клиент видит баланс баллов, историю покупок, каталог партнеров и предложения, подобранные по сегменту и истории покупок.</p>
+      <div className="actions"><NavLink className="primary-link" to="/login">Войти или зарегистрироваться</NavLink><NavLink className="secondary-link" to="/catalog">Посмотреть каталог</NavLink></div>
+    </div>
+    <div className="landing-card">
+      <h3>Демо-вход</h3>
+      <p><b>Email:</b> alice@example.com</p>
+      <p><b>Пароль:</b> password123</p>
+      <div className="feature-list"><span>JWT + refresh tokens</span><span>PostgreSQL + Flyway</span><span>React + Zustand</span><span>REST API v1</span></div>
+    </div>
+  </section>;
 }
