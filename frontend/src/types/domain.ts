@@ -14,3 +14,9 @@ export type SegmentRule = { segment: string; minTotalSpend: number; multiplier: 
 export type LoyaltyProgram = { rewardRules: RewardRule[]; segmentRules: SegmentRule[]; redemptionRule: string };
 export type CategoryInsight = { category: string; purchaseCount: number; spent: number; sharePercent: number; lastPurchaseAt?: string | null; averageCheck: number };
 export type PurchaseProfile = { favoriteCategories: CategoryInsight[]; purchaseCount: number; totalSpent: number; lastPurchaseAt?: string | null; averageCheck: number; purchaseFrequencyLabel: string; buyerRating: number; buyerRatingLabel: string };
+
+export type AdminStats = { customers: number; products: number; purchases: number; revenue: number; activeCertificates: number; activeOffers: number };
+export type AdminUser = { id: number; fullName: string; email: string; segment: string; pointsBalance: number; purchasesCount: number; totalSpent: number; createdAt: string };
+export type AdminMerchant = { id: number; name: string; category: string };
+export type AdminProduct = { id: number; merchantId: number; merchantName: string; name: string; category: string; price: number };
+export type ProductPayload = { merchantId: number; name: string; category: string; price: number };

@@ -24,6 +24,7 @@ Services:
 Demo credentials:
 
 - Admin: `admin@loyalty.local` / `admin12345`
+- Course admin: `admin@admin.local` / `admin`
 - Customer: `alice@example.com` / `password123`
 
 ## Implemented high-level use cases
@@ -50,6 +51,9 @@ Demo credentials:
 20. Redeem points into discount certificates with confirmation codes.
 21. View certificate wallet and certificate statuses.
 22. Apply an active certificate to a purchase.
+23. Admin product CRUD.
+24. Admin customer list, segment editing and manual point adjustments.
+25. Admin platform statistics dashboard.
 
 ## Loyalty business rules
 

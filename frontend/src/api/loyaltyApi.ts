@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { Balance, Certificate, LoyaltyProgram, Offer, Page, Product, Purchase, PurchaseProfile, Recommendation, Redemption, RewardTransaction, TokenResponse } from '../types/domain';
+import type { AdminMerchant, AdminProduct, AdminStats, AdminUser, Balance, Certificate, LoyaltyProgram, Offer, Page, Product, ProductPayload, Purchase, PurchaseProfile, Recommendation, Redemption, RewardTransaction, TokenResponse } from '../types/domain';
 
 export type RegisterPayload = { fullName: string; email: string; password: string };
 
@@ -17,3 +17,14 @@ export const createPurchase = async (merchantId: number, productId: number, cert
 export const purchases = async () => (await api.get<Page<Purchase>>('/purchases', { params: { size: 10, sort: 'purchasedAt,desc' } })).data;
 export const transactions = async () => (await api.get<Page<RewardTransaction>>('/loyalty/transactions', { params: { size: 8, sort: 'createdAt,desc' } })).data;
 export const recommendations = async () => (await api.get<Recommendation[]>('/loyalty/recommendations')).data;
+
+
+export const adminStats = async () => (await api.get<AdminStats>('/admin/stats')).data;
+export const adminUsers = async () => (await api.get<AdminUser[]>('/admin/users')).data;
+export const adminMerchants = async () => (await api.get<AdminMerchant[]>('/admin/merchants')).data;
+export const adminProducts = async () => (await api.get<AdminProduct[]>('/admin/products')).data;
+export const createAdminProduct = async (payload: ProductPayload) => (await api.post<AdminProduct>('/admin/products', payload)).data;
+export const updateAdminProduct = async (id: number, payload: ProductPayload) => (await api.put<AdminProduct>(`/admin/products/${id}`, payload)).data;
+export const deleteAdminProduct = async (id: number) => (await api.delete(`/admin/products/${id}`)).data;
+export const updateAdminUserSegment = async (id: number, segment: string) => (await api.patch(`/admin/users/${id}/segment`, { segment })).data;
+export const adjustAdminUserPoints = async (id: number, points: number, reason: string) => (await api.post(`/admin/users/${id}/points`, { points, reason })).data;

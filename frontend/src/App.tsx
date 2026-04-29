@@ -5,6 +5,7 @@ import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { CatalogPage } from './pages/CatalogPage';
 import { OffersPage } from './pages/OffersPage';
+import { AdminPage } from './pages/AdminPage';
 
 function RequireAuth({ children }: { children: ReactElement }) {
   const customer = useAuthStore((state) => state.customer);
@@ -13,6 +14,7 @@ function RequireAuth({ children }: { children: ReactElement }) {
 
 export default function App() {
   const { customer, logout } = useAuthStore();
+  const isAdmin = customer?.roles.includes('ROLE_ADMIN');
   return <div className="layout">
     <header className="header">
       <NavLink to="/" className="logo" aria-label="Loyalty logo"><span className="logo-mark"><svg viewBox="0 0 48 48" role="img"><path d="M24 4 42 14v20L24 44 6 34V14L24 4Z"/><path d="M16 24h16M24 16v16"/></svg></span></NavLink>
@@ -20,6 +22,7 @@ export default function App() {
         <NavLink to="/">Главная</NavLink>
         <NavLink to="/catalog">Каталог</NavLink>
         <NavLink to="/offers">Предложения</NavLink>
+        {isAdmin ? <NavLink to="/admin">Админка</NavLink> : null}
       </nav>
       <div className="header-actions">
         {customer ? <><span className="profile-chip">{customer.fullName} · {customer.segment}</span><button className="secondary" onClick={logout}>Выйти</button></> : <NavLink className="primary-link" to="/login">Войти</NavLink>}
@@ -30,6 +33,7 @@ export default function App() {
         <Route path="/login" element={customer ? <Navigate to="/" replace /> : <LoginPage />} />
         <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/offers" element={<RequireAuth><OffersPage /></RequireAuth>} />
+        <Route path="/admin" element={<RequireAuth>{isAdmin ? <AdminPage /> : <Navigate to="/" replace />}</RequireAuth>} />
         <Route path="/" element={customer ? <DashboardPage /> : <LandingPage />} />
       </Routes>
     </main>
