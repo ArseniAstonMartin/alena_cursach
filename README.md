@@ -53,9 +53,8 @@ Demo credentials:
 22. Apply an active certificate to a purchase.
 23. Admin creates and tunes product categories.
 24. Admin creates, edits and deletes products inside categories.
-23. Admin product CRUD.
-24. Admin customer list, segment editing and manual point adjustments.
-25. Admin platform statistics dashboard.
+25. Admin customer list, segment editing and manual point adjustments.
+26. Admin platform statistics dashboard.
 
 ## Loyalty business rules
 
@@ -75,6 +74,23 @@ Demo credentials:
 - A purchase can apply one active certificate only to a matching category; the purchase stores gross amount, discount amount, final amount and certificate code.
 - Product categories are managed separately in `product_categories`; each category has cashback percent, strategic priority, mission multiplier and active flag.
 - Category settings influence reward accrual, strategic certificate category selection and mission difficulty/reward mechanics.
+
+## Quality gates and infrastructure
+
+- Redis cache is enabled through Spring Cache and RedisCacheManager.
+- Loyalty program rules and admin category data are explicitly cached in Redis.
+- Admin category mutations evict the category/program cache.
+- JaCoCo runs during `mvn verify` and enforces at least 40% line coverage for the purchase-history business service.
+- Testcontainers integration test is available in the `integration-tests` Maven profile.
+- Basic static analysis is available in the `quality` Maven profile with Checkstyle and SpotBugs.
+
+Useful commands:
+
+```bash
+mvn verify
+mvn -Pquality verify
+mvn -Pintegration-tests verify
+```
 
 ## Architecture notes
 
@@ -96,4 +112,4 @@ Patterns beyond Repository/Unit of Work:
 
 Java/OOP requirements included: generics (`Command<R>`, `AbstractUseCase<I,O>`), abstract class, custom interfaces, lambdas/Stream API, DTO records, Optional repositories, custom exceptions, custom annotation plus Reflection API in `IntegrationRegistry`.
 
-Database schema has more than eight related 3NF tables: customers, roles, customer_roles, merchants, products, purchases, purchase_items, loyalty_accounts, reward_transactions, offers, claimed_offers, refresh_tokens, reward_rules, redemption_orders, purchase_reward_breakdowns and customer_segment_thresholds. Flyway migrations are split into V1-V8.
+Database schema has more than eight related 3NF tables: customers, roles, customer_roles, merchants, product_categories, products, purchases, purchase_items, loyalty_accounts, reward_transactions, offers, claimed_offers, refresh_tokens, reward_rules, redemption_orders, purchase_reward_breakdowns and customer_segment_thresholds. Flyway migrations are split into V1-V12.

@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
@@ -78,6 +79,7 @@ public class AdminController {
     }
 
     @PostMapping("/categories")
+    @CacheEvict(cacheNames = {"loyaltyProgram", "catalogProducts"}, allEntries = true)
     public AdminCategoryDto createCategory(@Valid @RequestBody CategoryRequest request) {
         String code = request.code().trim().toUpperCase();
         jdbcTemplate.update("insert into product_categories(code, display_name, description, cashback_percent, strategic_priority, mission_multiplier, active) values (?, ?, ?, ?, ?, ?, ?)", code, request.displayName(), request.description(), request.cashbackPercent(), request.strategicPriority(), request.missionMultiplier(), request.active());
@@ -86,6 +88,7 @@ public class AdminController {
     }
 
     @PutMapping("/categories/{code}")
+    @CacheEvict(cacheNames = {"loyaltyProgram", "catalogProducts"}, allEntries = true)
     public AdminCategoryDto updateCategory(@PathVariable String code, @Valid @RequestBody CategoryRequest request) {
         String normalized = code.trim().toUpperCase();
         int updated = jdbcTemplate.update("update product_categories set display_name = ?, description = ?, cashback_percent = ?, strategic_priority = ?, mission_multiplier = ?, active = ? where code = ?", request.displayName(), request.description(), request.cashbackPercent(), request.strategicPriority(), request.missionMultiplier(), request.active(), normalized);
@@ -95,6 +98,7 @@ public class AdminController {
     }
 
     @DeleteMapping("/categories/{code}")
+    @CacheEvict(cacheNames = {"loyaltyProgram", "catalogProducts"}, allEntries = true)
     public void deleteCategory(@PathVariable String code) {
         String normalized = code.trim().toUpperCase();
         int deleted = jdbcTemplate.update("delete from product_categories where code = ? and not exists (select 1 from products where category = ?)", normalized, normalized);
@@ -113,6 +117,7 @@ public class AdminController {
     }
 
     @PostMapping("/products")
+    @CacheEvict(cacheNames = "catalogProducts", allEntries = true)
     public AdminProductDto createProduct(@Valid @RequestBody ProductRequest request) {
         ensureCategory(request.category());
         Long id = jdbcTemplate.queryForObject("insert into products(merchant_id, name, category, price) values (?, ?, ?, ?) returning id", Long.class, request.merchantId(), request.name(), request.category().trim().toUpperCase(), request.price());
@@ -120,6 +125,7 @@ public class AdminController {
     }
 
     @PutMapping("/products/{id}")
+    @CacheEvict(cacheNames = "catalogProducts", allEntries = true)
     public AdminProductDto updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
         ensureCategory(request.category());
         int updated = jdbcTemplate.update("update products set merchant_id = ?, name = ?, category = ?, price = ? where id = ?", request.merchantId(), request.name(), request.category().trim().toUpperCase(), request.price(), id);
@@ -128,6 +134,7 @@ public class AdminController {
     }
 
     @DeleteMapping("/products/{id}")
+    @CacheEvict(cacheNames = "catalogProducts", allEntries = true)
     public void deleteProduct(@PathVariable Long id) {
         int deleted = jdbcTemplate.update("delete from products where id = ? and not exists (select 1 from purchase_items where product_id = ?)", id, id);
         if (deleted == 0) throw new BusinessRuleViolationException("Product is used in purchases or does not exist");
