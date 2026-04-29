@@ -35,14 +35,14 @@ class LoyaltyFacadeTest {
         when(customerQueryService.requireByEmail("alice@example.com")).thenReturn(customer);
         when(accounts.findByCustomer(customer)).thenReturn(Optional.of(account));
 
-        var result = facade.redeem("alice@example.com", new RedemptionRequest(100, "Coffee certificate"));
+        var result = facade.redeem("alice@example.com", new RedemptionRequest(100, "Coffee certificate", "GROCERY"));
 
         assertThat(result.pointsSpent()).isEqualTo(100);
         assertThat(result.discountAmount()).isEqualByComparingTo("10");
         assertThat(result.remainingBalance()).isEqualTo(100);
         assertThat(result.confirmationCode()).startsWith("LP-");
         verify(transactions).save(any());
-        verify(jdbcTemplate).update(startsWith("insert into redemption_orders"), any(), any(), eq(100), any(), eq("Coffee certificate"), any());
+        verify(jdbcTemplate).update(startsWith("insert into redemption_orders"), any(), any(), eq(100), any(), eq("Coffee certificate"), any(), eq("GROCERY"));
     }
 
     @Test
@@ -53,7 +53,7 @@ class LoyaltyFacadeTest {
         when(customerQueryService.requireByEmail("bob@example.com")).thenReturn(customer);
         when(accounts.findByCustomer(customer)).thenReturn(Optional.of(account));
 
-        assertThatThrownBy(() -> facade.redeem("bob@example.com", new RedemptionRequest(50, "Discount")))
+        assertThatThrownBy(() -> facade.redeem("bob@example.com", new RedemptionRequest(50, "Discount", "GROCERY")))
             .isInstanceOf(BusinessRuleViolationException.class)
             .hasMessageContaining("Not enough points");
         verifyNoInteractions(transactions);

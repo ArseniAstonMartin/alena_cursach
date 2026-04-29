@@ -50,6 +50,21 @@ public class PurchaseInsightService {
         return "В истории преобладает " + top + ", а " + targetCategory + " почти не покупалась. Это предложение расширяет интересы клиента.";
     }
 
+    public String recommendedCertificateCategory(PurchaseProfile profile) {
+        return profile.categories().isEmpty() ? "ANY" : profile.categories().getFirst().category();
+    }
+
+    public String certificateReason(PurchaseProfile profile, String category) {
+        if ("ANY".equals(category)) {
+            return "Сертификат универсальный, потому что истории покупок пока недостаточно для выбора любимой категории.";
+        }
+        return profile.categories().stream()
+            .filter(stat -> stat.category().equals(category))
+            .findFirst()
+            .map(stat -> "Сертификат привязан к " + category + ", потому что это ваша сильная категория: " + stat.purchaseCount() + " покупок на " + stat.spent().intValue() + " ₽.")
+            .orElse("Сертификат привязан к " + category + " как к категории для развития покупательского интереса.");
+    }
+
     public record CategoryStat(String category, int purchaseCount, BigDecimal spent) {}
     public record PurchaseProfile(List<CategoryStat> categories, int purchaseCount, BigDecimal totalSpent, OffsetDateTime lastPurchaseAt) {}
 }

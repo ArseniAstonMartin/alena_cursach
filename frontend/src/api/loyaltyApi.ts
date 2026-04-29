@@ -11,7 +11,7 @@ export const purchaseProfile = async () => (await api.get<PurchaseProfile>('/loy
 export const program = async () => (await api.get<LoyaltyProgram>('/loyalty/program')).data;
 export const offers = async () => (await api.get<Offer[]>('/loyalty/offers')).data;
 export const claimOffer = async (id: number) => (await api.post<Offer>(`/loyalty/offers/${id}/claim`)).data;
-export const redeemReward = async (points: number, rewardName: string) => (await api.post<Redemption>('/loyalty/redemptions', { points, rewardName })).data;
+export const redeemReward = async (points: number, rewardName: string, targetCategory?: string) => (await api.post<Redemption>('/loyalty/redemptions', { points, rewardName, targetCategory })).data;
 export const certificates = async () => (await api.get<Certificate[]>('/loyalty/certificates')).data;
 export const createPurchase = async (merchantId: number, productId: number, certificateId?: number | null) => (await api.post<Purchase>('/purchases', { merchantId, certificateId, items: [{ productId, quantity: 1 }] })).data;
 export const purchases = async () => (await api.get<Page<Purchase>>('/purchases', { params: { size: 10, sort: 'purchasedAt,desc' } })).data;

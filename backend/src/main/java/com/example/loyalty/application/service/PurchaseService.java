@@ -23,12 +23,17 @@ public class PurchaseService {
     @Transactional(readOnly = true) public Page<PurchaseDto> history(String email, Pageable pageable) { Customer customer = customerQueryService.requireByEmail(email); return purchases.findByCustomer(customer, pageable).map(this::toDto); }
 
     private void applyCertificate(Customer customer, Purchase purchase, Long certificateId) {
+        String categories = purchase.getItems().stream().map(item -> item.getProduct().getCategory()).collect(Collectors.joining(","));
         Certificate certificate = jdbcTemplate.query("""
-            select id, discount_amount, confirmation_code
+            select id, discount_amount, confirmation_code, target_category
             from redemption_orders
-            where id = ? and customer_id = ? and status = 'ACTIVE' and expires_at > now()
-            """, rs -> rs.next() ? new Certificate(rs.getLong("id"), rs.getBigDecimal("discount_amount"), rs.getString("confirmation_code")) : null, certificateId, customer.getId());
+            where id = ?
+              and customer_id = ?
+              and status = 'ACTIVE'
+              and expires_at > now()
+            """, rs -> rs.next() ? new Certificate(rs.getLong("id"), rs.getBigDecimal("discount_amount"), rs.getString("confirmation_code"), rs.getString("target_category")) : null, certificateId, customer.getId());
         if (certificate == null) throw new BusinessRuleViolationException("Certificate is not active or does not belong to customer");
+        if (!certificate.targetCategory().equals("ANY") && !categories.contains(certificate.targetCategory())) throw new BusinessRuleViolationException("Certificate can only be applied to " + certificate.targetCategory());
         purchase.applyCertificate(certificate.id(), certificate.discountAmount());
         jdbcTemplate.update("update redemption_orders set status = 'USED', used_at = now() where id = ?", certificate.id());
     }
@@ -54,7 +59,7 @@ public class PurchaseService {
         return jdbcTemplate.query("select confirmation_code from redemption_orders where id = ?", rs -> rs.next() ? new CertificateInfo(rs.getString("confirmation_code")) : null, certificateId);
     }
 
-    private record Certificate(Long id, BigDecimal discountAmount, String code) {}
+    private record Certificate(Long id, BigDecimal discountAmount, String code, String targetCategory) {}
     private record CertificateInfo(String code) {}
     private record RewardInfo(int points, String explanation) {}
 }

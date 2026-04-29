@@ -102,5 +102,8 @@ p { line-height: 1.6; }
 .product-bottom b, .offer-meta b { font-size: 18px; }
 .score { width: fit-content; padding: 7px 10px; border-radius: 999px; background: var(--surface-2); }
 .offer-reason { padding: 12px; border-left: 4px solid var(--primary); border-radius: 12px; background: #eef3ff; color: var(--muted); }
+.offer-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.personal-reason { padding: 12px; border-radius: 14px; background: var(--surface-2); color: var(--muted); line-height: 1.5; }
+.personal-reason b { color: var(--text); }
 .offer .primary { width: 100%; }
 @media (max-width: 860px) { .header { grid-template-columns: 1fr; justify-items: start; padding: 14px 18px; } .menu { justify-content: flex-start; flex-wrap: wrap; } .main { width: min(100% - 24px, 1180px); padding-top: 20px; } .landing, .auth-page, .two-columns, .stats { grid-template-columns: 1fr; } .landing-text { padding: 28px; min-height: auto; } .page-title { align-items: flex-start; flex-direction: column; } }

@@ -13,11 +13,11 @@ public final class LoyaltyDtos {
     private LoyaltyDtos() {}
     public record BalanceDto(Long customerId, int pointsBalance, CustomerSegment segment) {}
     public record RewardTransactionDto(Long id, RewardTransactionType type, int points, String reason, OffsetDateTime createdAt) {}
-    public record OfferDto(Long id, String title, String description, String targetCategory, int bonusPoints, LocalDate validUntil, int personalizationScore, String personalizationReason) {}
+    public record OfferDto(Long id, String title, String description, String targetCategory, int bonusPoints, LocalDate validUntil, int personalizationScore, String personalizationReason, String status, String nextStep) {}
     public record RecommendationDto(String title, String description, String source) {}
-    public record RedemptionRequest(@Min(50) int points, @NotBlank String rewardName) {}
-    public record RedemptionDto(int pointsSpent, BigDecimal discountAmount, int remainingBalance, String confirmationCode, String rewardName) {}
-    public record CertificateDto(Long id, int pointsSpent, BigDecimal discountAmount, String rewardName, String confirmationCode, String status, OffsetDateTime createdAt, OffsetDateTime expiresAt, OffsetDateTime usedAt, Long purchaseId) {}
+    public record RedemptionRequest(@Min(50) int points, @NotBlank String rewardName, String targetCategory) {}
+    public record RedemptionDto(int pointsSpent, BigDecimal discountAmount, int remainingBalance, String confirmationCode, String rewardName, String targetCategory, String reason) {}
+    public record CertificateDto(Long id, int pointsSpent, BigDecimal discountAmount, String rewardName, String confirmationCode, String targetCategory, String status, OffsetDateTime createdAt, OffsetDateTime expiresAt, OffsetDateTime usedAt, Long purchaseId) {}
     public record RewardRuleDto(String category, BigDecimal cashbackPercent, String description) {}
     public record SegmentRuleDto(CustomerSegment segment, BigDecimal minTotalSpend, BigDecimal multiplier, String description) {}
     public record LoyaltyProgramDto(List<RewardRuleDto> rewardRules, List<SegmentRuleDto> segmentRules, String redemptionRule) {}
