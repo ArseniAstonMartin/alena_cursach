@@ -21,11 +21,11 @@ Services:
 - Backend API: <http://localhost:8080/api/v1>
 - OpenAPI UI: <http://localhost:8080/swagger-ui.html>
 
-Demo credentials:
+Seeded admin credentials:
 
-- Admin: `admin@loyalty.local` / `admin12345`
-- Course admin: `admin@admin.local` / `admin`
-- Customer: `alice@example.com` / `password123`
+- Admin: `admin@admin.local` / `admin`
+
+No customer account is seeded in the final state. Register a new customer through the UI to test the full customer flow.
 
 ## Implemented high-level use cases
 
@@ -112,4 +112,4 @@ Patterns beyond Repository/Unit of Work:
 
 Java/OOP requirements included: generics (`Command<R>`, `AbstractUseCase<I,O>`), abstract class, custom interfaces, lambdas/Stream API, DTO records, Optional repositories, custom exceptions, custom annotation plus Reflection API in `IntegrationRegistry`.
 
-Database schema has more than eight related 3NF tables: customers, roles, customer_roles, merchants, product_categories, products, purchases, purchase_items, loyalty_accounts, reward_transactions, offers, claimed_offers, refresh_tokens, reward_rules, redemption_orders, purchase_reward_breakdowns and customer_segment_thresholds. Flyway migrations are split into V1-V12.
+Database schema has more than eight related 3NF tables: customers, roles, customer_roles, merchants, product_categories, products, purchases, purchase_items, loyalty_accounts, reward_transactions, offers, claimed_offers, refresh_tokens, reward_rules, redemption_orders, purchase_reward_breakdowns and customer_segment_thresholds. Flyway migrations are split into V1-V13.
