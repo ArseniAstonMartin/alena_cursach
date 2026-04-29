@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { balance, offers, program, purchases, recommendations, redeemReward, transactions } from '../api/loyaltyApi';
+import { balance, certificates, offers, program, purchases, recommendations, redeemReward, transactions } from '../api/loyaltyApi';
 
 export function DashboardPage() {
   const [redeemPoints, setRedeemPoints] = useState(100);
@@ -12,27 +12,29 @@ export function DashboardPage() {
   const offersQuery = useQuery({ queryKey: ['offers'], queryFn: offers });
   const programQuery = useQuery({ queryKey: ['program'], queryFn: program });
   const txQuery = useQuery({ queryKey: ['transactions'], queryFn: transactions });
-  const redeem = useMutation({ mutationFn: () => redeemReward(redeemPoints, 'Shopping discount certificate'), onSuccess: () => { client.invalidateQueries({ queryKey: ['balance'] }); client.invalidateQueries({ queryKey: ['transactions'] }); } });
+  const certificatesQuery = useQuery({ queryKey: ['certificates'], queryFn: certificates });
+  const redeem = useMutation({ mutationFn: () => redeemReward(redeemPoints, 'Shopping discount certificate'), onSuccess: () => { client.invalidateQueries({ queryKey: ['balance'] }); client.invalidateQueries({ queryKey: ['transactions'] }); client.invalidateQueries({ queryKey: ['certificates'] }); } });
   const maxRedeem = Math.max(50, balanceQuery.data?.pointsBalance ?? 50);
+  const activeCertificates = certificatesQuery.data?.filter((certificate) => certificate.status === 'ACTIVE') ?? [];
 
   return <section className="page">
-    <div className="page-title"><p className="label">Личный кабинет</p><h1>Баллы, покупки и выгода</h1></div>
+    <div className="page-title"><p className="label">Личный кабинет</p><h1>Баллы, сертификаты и покупки</h1></div>
     <div className="stats">
-      <div className="stat-card"><span>Баллы</span><b>{balanceQuery.data?.pointsBalance ?? '...'}</b><p>можно списать на сертификат</p></div>
-      <div className="stat-card"><span>Сегмент</span><b>{balanceQuery.data?.segment ?? '...'}</b><p>дает множитель к начислению</p></div>
+      <div className="stat-card"><span>Баллы</span><b>{balanceQuery.data?.pointsBalance ?? '...'}</b><p>можно обменять на сертификат</p></div>
+      <div className="stat-card"><span>Активные сертификаты</span><b>{activeCertificates.length}</b><p>доступны для применения в каталоге</p></div>
       <div className="stat-card"><span>Офферы</span><b>{offersQuery.data?.length ?? '...'}</b><p>активируйте перед покупкой</p></div>
     </div>
 
     <div className="two-columns">
-      <div className="card redeem-card"><div className="card-head"><h2>Списать баллы</h2><span>10 баллов = 1 ₽</span></div><p className="muted">Выберите сумму списания. После подтверждения создается сертификат с кодом.</p><input type="range" min="50" max={maxRedeem} step="10" value={Math.min(redeemPoints, maxRedeem)} onChange={(event) => setRedeemPoints(Number(event.target.value))} /><div className="redeem-summary"><b>{Math.min(redeemPoints, maxRedeem)} баллов</b><span>скидка {(Math.min(redeemPoints, maxRedeem) / 10).toFixed(0)} ₽</span></div><button className="primary" disabled={redeem.isPending || (balanceQuery.data?.pointsBalance ?? 0) < 50} onClick={() => redeem.mutate()}>{redeem.isPending ? 'Оформляем...' : 'Получить сертификат'}</button>{redeem.data ? <div className="alert success">Сертификат {redeem.data.confirmationCode} на {Number(redeem.data.discountAmount).toFixed(0)} ₽ создан.</div> : null}{redeem.isError ? <div className="alert error">Недостаточно баллов для списания.</div> : null}</div>
-      <div className="card"><div className="card-head"><h2>Как начисляются баллы</h2><span>правила</span></div>{programQuery.data?.rewardRules.map((rule) => <div className="rule-row" key={rule.category}><b>{rule.category}</b><span>{Number(rule.cashbackPercent).toFixed(0)}%</span><p>{rule.description}</p></div>)}<p className="muted">{programQuery.data?.redemptionRule}</p></div>
+      <div className="card redeem-card"><div className="card-head"><h2>Обменять баллы</h2><span>10 баллов = 1 ₽</span></div><p className="muted">Баллы превращаются в сертификат. Сертификат сохраняется в кошельке и применяется при покупке товара.</p><input type="range" min="50" max={maxRedeem} step="10" value={Math.min(redeemPoints, maxRedeem)} onChange={(event) => setRedeemPoints(Number(event.target.value))} /><div className="redeem-summary"><b>{Math.min(redeemPoints, maxRedeem)} баллов</b><span>сертификат на {(Math.min(redeemPoints, maxRedeem) / 10).toFixed(0)} ₽</span></div><button className="primary" disabled={redeem.isPending || (balanceQuery.data?.pointsBalance ?? 0) < 50} onClick={() => redeem.mutate()}>{redeem.isPending ? 'Оформляем...' : 'Создать сертификат'}</button>{redeem.data ? <div className="alert success">Сертификат {redeem.data.confirmationCode} создан и добавлен в кошелек.</div> : null}{redeem.isError ? <div className="alert error">Недостаточно баллов для списания.</div> : null}</div>
+      <div className="card"><div className="card-head"><h2>Кошелек сертификатов</h2><NavLink to="/catalog">Применить</NavLink></div>{certificatesQuery.data?.length ? certificatesQuery.data.map((certificate) => <div className="certificate" key={certificate.id}><div><b>{certificate.confirmationCode}</b><p>{certificate.rewardName}</p><small>до {new Date(certificate.expiresAt).toLocaleDateString()}</small></div><div><strong>{Number(certificate.discountAmount).toFixed(0)} ₽</strong><span className={`status ${certificate.status.toLowerCase()}`}>{certificate.status}</span></div></div>) : <p className="muted">Сертификатов пока нет. Обменяйте баллы, и они появятся здесь.</p>}</div>
     </div>
 
     <div className="two-columns">
-      <div className="card"><div className="card-head"><h2>История покупок</h2><NavLink to="/catalog">Купить товар</NavLink></div>{purchasesQuery.data?.content.length ? purchasesQuery.data.content.map((purchase) => <div className="row" key={purchase.id}><div><b>{purchase.merchantName}</b><p>{new Date(purchase.purchasedAt).toLocaleString()}</p></div><strong>{Number(purchase.totalAmount).toFixed(2)} ₽</strong></div>) : <p className="muted">Покупок пока нет. Перейдите в каталог и создайте первую покупку.</p>}</div>
+      <div className="card"><div className="card-head"><h2>История покупок</h2><NavLink to="/catalog">Купить товар</NavLink></div>{purchasesQuery.data?.content.length ? purchasesQuery.data.content.map((purchase) => <div className="purchase-row" key={purchase.id}><div><b>{purchase.merchantName}</b><p>{new Date(purchase.purchasedAt).toLocaleString()}</p>{purchase.certificateCode ? <small>Сертификат {purchase.certificateCode}: -{Number(purchase.discountAmount).toFixed(0)} ₽</small> : null}{purchase.rewardExplanation ? <small>{purchase.rewardExplanation}</small> : null}</div><div><strong>{Number(purchase.totalAmount).toFixed(2)} ₽</strong><span>+{purchase.pointsEarned} баллов</span></div></div>) : <p className="muted">Покупок пока нет. Перейдите в каталог и создайте первую покупку.</p>}</div>
       <div className="card"><div className="card-head"><h2>Движение баллов</h2><span>ledger</span></div>{txQuery.data?.content.length ? txQuery.data.content.map((tx) => <div className="row" key={tx.id}><div><b>{tx.reason}</b><p>{new Date(tx.createdAt).toLocaleString()}</p></div><strong className={tx.points > 0 ? 'positive' : 'negative'}>{tx.points > 0 ? '+' : ''}{tx.points}</strong></div>) : <p className="muted">Операций пока нет.</p>}</div>
     </div>
 
-    <div className="card"><div className="card-head"><h2>Идеи для следующих покупок</h2><span>recommendations</span></div>{recQuery.data?.map((item) => <div className="note" key={item.title}><b>{item.title}</b><p>{item.description}</p></div>)}</div>
+    <div className="two-columns"><div className="card"><div className="card-head"><h2>Как начисляются баллы</h2><span>правила</span></div>{programQuery.data?.rewardRules.map((rule) => <div className="rule-row" key={rule.category}><b>{rule.category}</b><span>{Number(rule.cashbackPercent).toFixed(0)}%</span><p>{rule.description}</p></div>)}<p className="muted">{programQuery.data?.redemptionRule}</p></div><div className="card"><div className="card-head"><h2>Идеи для следующих покупок</h2><span>recommendations</span></div>{recQuery.data?.map((item) => <div className="note" key={item.title}><b>{item.title}</b><p>{item.description}</p></div>)}</div></div>
   </section>;
 }

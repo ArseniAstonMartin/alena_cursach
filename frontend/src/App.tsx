@@ -48,7 +48,7 @@ function LandingPage() {
       <h3>Демо-вход</h3>
       <p><b>Email:</b> alice@example.com</p>
       <p><b>Пароль:</b> password123</p>
-      <div className="feature-list"><span>Кэшбэк по категориям покупок</span><span>Множитель по уровню клиента</span><span>Персональные бонусы за активированные офферы</span><span>Списание баллов на сертификаты</span></div>
+      <div className="feature-list"><span>Копите баллы за покупки</span><span>Обменивайте баллы на сертификаты</span><span>Храните сертификаты в кошельке</span><span>Применяйте скидку в каталоге</span></div>
     </div>
   </section>;
 }

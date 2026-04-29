@@ -48,6 +48,8 @@ Demo credentials:
 18. View loyalty program rules by category and segment.
 19. Receive explained reward accruals after purchases.
 20. Redeem points into discount certificates with confirmation codes.
+21. View certificate wallet and certificate statuses.
+22. Apply an active certificate to a purchase.
 
 ## Loyalty business rules
 
@@ -56,6 +58,8 @@ Demo credentials:
 - Activated offers add fixed bonus points when their category matches a purchase.
 - Every purchase reward is stored in `purchase_reward_breakdowns` with an explanation.
 - Points can be redeemed through `redemption_orders`; the current rule is 10 points = 1 discount unit, minimum 50 points.
+- Redeemed certificates are stored in the customer's wallet with `ACTIVE`, `USED` or `EXPIRED` status.
+- A purchase can apply one active certificate; the purchase stores gross amount, discount amount, final amount and certificate code.
 
 ## Architecture notes
 

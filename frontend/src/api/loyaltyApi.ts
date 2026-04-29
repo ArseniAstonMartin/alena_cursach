@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { Balance, LoyaltyProgram, Offer, Page, Product, Purchase, Recommendation, Redemption, RewardTransaction, TokenResponse } from '../types/domain';
+import type { Balance, Certificate, LoyaltyProgram, Offer, Page, Product, Purchase, Recommendation, Redemption, RewardTransaction, TokenResponse } from '../types/domain';
 
 export type RegisterPayload = { fullName: string; email: string; password: string };
 
@@ -11,7 +11,8 @@ export const program = async () => (await api.get<LoyaltyProgram>('/loyalty/prog
 export const offers = async () => (await api.get<Offer[]>('/loyalty/offers')).data;
 export const claimOffer = async (id: number) => (await api.post<Offer>(`/loyalty/offers/${id}/claim`)).data;
 export const redeemReward = async (points: number, rewardName: string) => (await api.post<Redemption>('/loyalty/redemptions', { points, rewardName })).data;
-export const createPurchase = async (merchantId: number, productId: number) => (await api.post<Purchase>('/purchases', { merchantId, items: [{ productId, quantity: 1 }] })).data;
+export const certificates = async () => (await api.get<Certificate[]>('/loyalty/certificates')).data;
+export const createPurchase = async (merchantId: number, productId: number, certificateId?: number | null) => (await api.post<Purchase>('/purchases', { merchantId, certificateId, items: [{ productId, quantity: 1 }] })).data;
 export const purchases = async () => (await api.get<Page<Purchase>>('/purchases', { params: { size: 10, sort: 'purchasedAt,desc' } })).data;
 export const transactions = async () => (await api.get<Page<RewardTransaction>>('/loyalty/transactions', { params: { size: 8, sort: 'createdAt,desc' } })).data;
 export const recommendations = async () => (await api.get<Recommendation[]>('/loyalty/recommendations')).data;

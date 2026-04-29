@@ -17,6 +17,7 @@ public final class LoyaltyDtos {
     public record RecommendationDto(String title, String description, String source) {}
     public record RedemptionRequest(@Min(50) int points, @NotBlank String rewardName) {}
     public record RedemptionDto(int pointsSpent, BigDecimal discountAmount, int remainingBalance, String confirmationCode, String rewardName) {}
+    public record CertificateDto(Long id, int pointsSpent, BigDecimal discountAmount, String rewardName, String confirmationCode, String status, OffsetDateTime createdAt, OffsetDateTime expiresAt, OffsetDateTime usedAt, Long purchaseId) {}
     public record RewardRuleDto(String category, BigDecimal cashbackPercent, String description) {}
     public record SegmentRuleDto(CustomerSegment segment, BigDecimal minTotalSpend, BigDecimal multiplier, String description) {}
     public record LoyaltyProgramDto(List<RewardRuleDto> rewardRules, List<SegmentRuleDto> segmentRules, String redemptionRule) {}

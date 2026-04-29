@@ -59,6 +59,19 @@ public class RewardCalculationService {
             values (?, ?, ?, ?, ?, ?)
             on conflict (purchase_id) do nothing
             """, purchaseId, breakdown.basePoints(), breakdown.segmentMultiplier(), breakdown.offerBonusPoints(), breakdown.finalPoints(), breakdown.explanation());
+        if (breakdown.offerBonusPoints() > 0) {
+            jdbcTemplate.update("""
+                update claimed_offers co
+                set status = 'USED', used_at = now()
+                from offers o, purchase_items pi, products p
+                where co.offer_id = o.id
+                  and pi.product_id = p.id
+                  and pi.purchase_id = ?
+                  and co.customer_id = (select customer_id from purchases where id = ?)
+                  and co.status = 'CLAIMED'
+                  and o.target_category = p.category
+                """, purchaseId, purchaseId);
+        }
     }
 
     public record RewardBreakdown(int basePoints, BigDecimal segmentMultiplier, int offerBonusPoints, int finalPoints, String explanation) {}
