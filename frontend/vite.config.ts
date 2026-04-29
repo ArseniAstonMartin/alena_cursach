@@ -9,6 +9,16 @@ export default defineConfig({
       'f4bbe14a7fb9cf598328-pod-25exqh64dfb5bj3rzavzesv7s4-5173.us7.cursorvm.com',
       '.cursorvm.com'
     ],
-    proxy: { '/api': 'http://localhost:8080' }
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.setHeader('Origin', 'http://localhost:5173');
+          });
+        }
+      }
+    }
   }
 });
