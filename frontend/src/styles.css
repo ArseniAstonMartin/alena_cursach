@@ -87,6 +87,9 @@ p { line-height: 1.6; }
 .status.expired { color: var(--red); background: #fee2e2; }
 .purchase-row strong { display: block; text-align: right; }
 .purchase-row span { display: block; margin-top: 4px; color: var(--green); font-weight: 800; }
+.insight-list { display: grid; gap: 10px; }
+.insight-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 12px; border-radius: 14px; background: var(--surface-2); }
+.insight-row p { grid-column: 1 / -1; margin: 0; color: var(--muted); }
 .certificate-picker { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 .certificate-picker select { min-width: 280px; border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; background: white; color: var(--text); }
 .catalog-grid, .offers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(245px, 1fr)); gap: 16px; }
@@ -98,5 +101,6 @@ p { line-height: 1.6; }
 .product-bottom, .offer-meta { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .product-bottom b, .offer-meta b { font-size: 18px; }
 .score { width: fit-content; padding: 7px 10px; border-radius: 999px; background: var(--surface-2); }
+.offer-reason { padding: 12px; border-left: 4px solid var(--primary); border-radius: 12px; background: #eef3ff; color: var(--muted); }
 .offer .primary { width: 100%; }
 @media (max-width: 860px) { .header { grid-template-columns: 1fr; justify-items: start; padding: 14px 18px; } .menu { justify-content: flex-start; flex-wrap: wrap; } .main { width: min(100% - 24px, 1180px); padding-top: 20px; } .landing, .auth-page, .two-columns, .stats { grid-template-columns: 1fr; } .landing-text { padding: 28px; min-height: auto; } .page-title { align-items: flex-start; flex-direction: column; } }

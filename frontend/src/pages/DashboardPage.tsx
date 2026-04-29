@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { balance, certificates, offers, program, purchases, recommendations, redeemReward, transactions } from '../api/loyaltyApi';
+import { balance, certificates, offers, program, purchaseProfile, purchases, recommendations, redeemReward, transactions } from '../api/loyaltyApi';
 
 export function DashboardPage() {
   const [redeemPoints, setRedeemPoints] = useState(100);
@@ -10,6 +10,7 @@ export function DashboardPage() {
   const purchasesQuery = useQuery({ queryKey: ['purchases'], queryFn: purchases });
   const recQuery = useQuery({ queryKey: ['recommendations'], queryFn: recommendations });
   const offersQuery = useQuery({ queryKey: ['offers'], queryFn: offers });
+  const profileQuery = useQuery({ queryKey: ['purchase-profile'], queryFn: purchaseProfile });
   const programQuery = useQuery({ queryKey: ['program'], queryFn: program });
   const txQuery = useQuery({ queryKey: ['transactions'], queryFn: transactions });
   const certificatesQuery = useQuery({ queryKey: ['certificates'], queryFn: certificates });
@@ -35,6 +36,7 @@ export function DashboardPage() {
       <div className="card"><div className="card-head"><h2>Движение баллов</h2><span>ledger</span></div>{txQuery.data?.content.length ? txQuery.data.content.map((tx) => <div className="row" key={tx.id}><div><b>{tx.reason}</b><p>{new Date(tx.createdAt).toLocaleString()}</p></div><strong className={tx.points > 0 ? 'positive' : 'negative'}>{tx.points > 0 ? '+' : ''}{tx.points}</strong></div>) : <p className="muted">Операций пока нет.</p>}</div>
     </div>
 
-    <div className="two-columns"><div className="card"><div className="card-head"><h2>Как начисляются баллы</h2><span>правила</span></div>{programQuery.data?.rewardRules.map((rule) => <div className="rule-row" key={rule.category}><b>{rule.category}</b><span>{Number(rule.cashbackPercent).toFixed(0)}%</span><p>{rule.description}</p></div>)}<p className="muted">{programQuery.data?.redemptionRule}</p></div><div className="card"><div className="card-head"><h2>Идеи для следующих покупок</h2><span>recommendations</span></div>{recQuery.data?.map((item) => <div className="note" key={item.title}><b>{item.title}</b><p>{item.description}</p></div>)}</div></div>
+    <div className="two-columns"><div className="card"><div className="card-head"><h2>Профиль покупок</h2><span>на основе истории</span></div><div className="profile-summary"><b>{profileQuery.data?.purchaseCount ?? 0}</b><span>покупок на {Number(profileQuery.data?.totalSpent ?? 0).toFixed(0)} ₽</span></div>{profileQuery.data?.favoriteCategories.length ? profileQuery.data.favoriteCategories.map((category) => <div className="rule-row" key={category.category}><b>{category.category}</b><span>{Number(category.spent).toFixed(0)} ₽</span><p>{category.purchaseCount} покупок в категории</p></div>) : <p className="muted">После первых покупок здесь появятся любимые категории, и офферы станут точнее.</p>}</div><div className="card"><div className="card-head"><h2>Как начисляются баллы</h2><span>правила</span></div>{programQuery.data?.rewardRules.map((rule) => <div className="rule-row" key={rule.category}><b>{rule.category}</b><span>{Number(rule.cashbackPercent).toFixed(0)}%</span><p>{rule.description}</p></div>)}<p className="muted">{programQuery.data?.redemptionRule}</p></div></div>
+    <div className="card"><div className="card-head"><h2>Идеи для следующих покупок</h2><span>recommendations</span></div>{recQuery.data?.map((item) => <div className="note" key={item.title}><b>{item.title}</b><p>{item.description}</p></div>)}</div>
   </section>;
 }

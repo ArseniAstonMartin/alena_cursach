@@ -56,6 +56,9 @@ Demo credentials:
 - Category cashback is stored in `reward_rules` and can differ per product category.
 - Segment multipliers are stored in `customer_segment_thresholds`.
 - Activated offers add fixed bonus points when their category matches a purchase.
+- Personalized offer ranking is based on purchase history: favorite categories, category spend and purchase count.
+- The customer purchase profile endpoint explains which categories dominate the user's behavior.
+- Each offer response includes a personalization reason, so the UI can show why it was recommended.
 - Every purchase reward is stored in `purchase_reward_breakdowns` with an explanation.
 - Points can be redeemed through `redemption_orders`; the current rule is 10 points = 1 discount unit, minimum 50 points.
 - Redeemed certificates are stored in the customer's wallet with `ACTIVE`, `USED` or `EXPIRED` status.

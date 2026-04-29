@@ -23,6 +23,7 @@ public class LoyaltyController {
     @PostMapping("/offers/{offerId}/claim") public OfferDto claim(Authentication authentication, @PathVariable Long offerId) { return loyalty.claim(authentication.getName(), offerId); }
     @PostMapping("/redemptions") public RedemptionDto redeemReward(Authentication authentication, @Valid @RequestBody RedemptionRequest request) { return loyalty.redeem(authentication.getName(), request); }
     @GetMapping("/certificates") public List<CertificateDto> certificates(Authentication authentication) { return loyalty.certificates(authentication.getName()); }
+    @GetMapping("/purchase-profile") public PurchaseProfileDto purchaseProfile(Authentication authentication) { return loyalty.purchaseProfile(authentication.getName()); }
     @GetMapping("/program") public LoyaltyProgramDto program() { return loyalty.program(); }
     @PatchMapping("/segment/recalculate") public CustomerSegment segment(Authentication authentication) { return loyalty.recalculateSegment(authentication.getName()); }
     @GetMapping("/transactions") public Page<RewardTransactionDto> transactions(Authentication authentication, Pageable pageable) { return loyalty.transactions(authentication.getName(), pageable); }

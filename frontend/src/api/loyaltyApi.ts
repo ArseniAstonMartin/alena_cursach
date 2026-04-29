@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { Balance, Certificate, LoyaltyProgram, Offer, Page, Product, Purchase, Recommendation, Redemption, RewardTransaction, TokenResponse } from '../types/domain';
+import type { Balance, Certificate, LoyaltyProgram, Offer, Page, Product, Purchase, PurchaseProfile, Recommendation, Redemption, RewardTransaction, TokenResponse } from '../types/domain';
 
 export type RegisterPayload = { fullName: string; email: string; password: string };
 
@@ -7,6 +7,7 @@ export const login = async (email: string, password: string) => (await api.post<
 export const registerCustomer = async (payload: RegisterPayload) => (await api.post<TokenResponse>('/auth/register', payload)).data;
 export const products = async (q = '') => (await api.get<Page<Product>>('/catalog/products', { params: { q, size: 20, sort: 'price,asc' } })).data;
 export const balance = async () => (await api.get<Balance>('/loyalty/balance')).data;
+export const purchaseProfile = async () => (await api.get<PurchaseProfile>('/loyalty/purchase-profile')).data;
 export const program = async () => (await api.get<LoyaltyProgram>('/loyalty/program')).data;
 export const offers = async () => (await api.get<Offer[]>('/loyalty/offers')).data;
 export const claimOffer = async (id: number) => (await api.post<Offer>(`/loyalty/offers/${id}/claim`)).data;
