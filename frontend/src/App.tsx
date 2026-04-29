@@ -15,7 +15,7 @@ export default function App() {
   const { customer, logout } = useAuthStore();
   return <div className="layout">
     <header className="header">
-      <NavLink to="/" className="logo"><span>LP</span><div><b>Loyalty Platform</b><small>умные предложения и баллы</small></div></NavLink>
+      <NavLink to="/" className="logo" aria-label="Loyalty logo"><span className="logo-mark"><svg viewBox="0 0 48 48" role="img"><path d="M24 4 42 14v20L24 44 6 34V14L24 4Z"/><path d="M16 24h16M24 16v16"/></svg></span></NavLink>
       <nav className="menu">
         <NavLink to="/">Главная</NavLink>
         <NavLink to="/catalog">Каталог</NavLink>
@@ -45,9 +45,8 @@ function LandingPage() {
       <div className="actions"><NavLink className="primary-link" to="/login">Войти или зарегистрироваться</NavLink><NavLink className="secondary-link" to="/catalog">Посмотреть каталог</NavLink></div>
     </div>
     <div className="landing-card">
-      <h3>Демо-вход</h3>
-      <p><b>Email:</b> alice@example.com</p>
-      <p><b>Пароль:</b> password123</p>
+      <h3>Персональная программа</h3>
+      <p>Сервис анализирует историю покупок, рейтинг клиента и прогресс заданий.</p>
       <div className="feature-list"><span>Копите баллы за покупки</span><span>Обменивайте баллы на сертификаты</span><span>Храните сертификаты в кошельке</span><span>Применяйте скидку в каталоге</span></div>
     </div>
   </section>;

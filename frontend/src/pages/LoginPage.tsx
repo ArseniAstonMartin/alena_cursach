@@ -1,5 +1,5 @@
 import { AxiosError } from 'axios';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { login, registerCustomer } from '../api/loyaltyApi';
@@ -18,6 +18,8 @@ function getError(error: unknown) {
 export function LoginPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [message, setMessage] = useState('');
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') ?? 'light');
+  useEffect(() => { document.documentElement.dataset.theme = theme; localStorage.setItem('theme', theme); }, [theme]);
   const setSession = useAuthStore((state) => state.setSession);
   const loginForm = useForm<LoginForm>({ defaultValues: { email: 'alice@example.com', password: 'password123' } });
   const registerForm = useForm<RegisterForm>({ defaultValues: { fullName: '', email: '', password: '' } });
@@ -49,7 +51,7 @@ export function LoginPage() {
       <p className="label">Авторизация</p>
       <h1>Войдите или создайте клиента</h1>
       <p>После входа откроются баланс баллов, история покупок, персональные предложения и возможность покупать товары из каталога.</p>
-      <div className="demo-box"><b>Демо:</b><span>alice@example.com</span><span>password123</span></div>
+      <div className="theme-box"><b>Тема интерфейса</b><p>Переключите оформление под себя.</p><button type="button" className="secondary" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>{theme === 'dark' ? 'Включить светлую тему' : 'Включить темную тему'}</button></div>
     </div>
     <div className="card auth-form">
       <div className="tabs">

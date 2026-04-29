@@ -12,6 +12,7 @@ export function OffersPage() {
     {claim.isError ? <div className="alert error">Задание уже активировано, использовано или пока недоступно.</div> : null}
     <div className="offers-grid">{query.data?.map((offer) => {
       const locked = offer.status === 'AVAILABLE' && offer.personalizationScore < offer.requiredRating;
+      const readyToActivateBonus = offer.status === 'CLAIMED' && offer.progressPercent >= 100;
       return <article className="offer mission" key={offer.id}>
         <div className="offer-top"><div className="score">rating {offer.personalizationScore}</div><span className={`status ${locked ? 'expired' : offer.status.toLowerCase()}`}>{locked ? 'LOCKED' : offer.status}</span></div>
         <h3>{offer.title}</h3>
@@ -24,7 +25,7 @@ export function OffersPage() {
         <div className="personal-reason"><b>Польза бизнесу:</b> {offer.businessGoal}</div>
         <div className="offer-meta"><span>{offer.targetCategory}</span><b>+{offer.bonusPoints} баллов</b></div>
         <small>Действует до {offer.validUntil} · нужно рейтинга {offer.requiredRating}</small>
-        <button className="primary" disabled={claim.isPending || offer.status !== 'AVAILABLE' || locked} onClick={() => claim.mutate(offer.id)}>{locked ? 'Недостаточно рейтинга' : offer.status === 'AVAILABLE' ? 'Принять задание' : offer.status === 'CLAIMED' ? 'Задание принято' : 'Выполнено'}</button>
+        <button className="primary" disabled={claim.isPending || locked || offer.status === 'USED' || (offer.status === 'CLAIMED' && !readyToActivateBonus)} onClick={() => claim.mutate(offer.id)}>{locked ? 'Недостаточно рейтинга' : readyToActivateBonus ? 'Активировать бонус' : offer.status === 'AVAILABLE' ? 'Принять задание' : offer.status === 'CLAIMED' ? 'Задание принято' : 'Бонус активирован'}</button>
       </article>;
     })}</div>
   </section>;
