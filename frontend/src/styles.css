@@ -105,5 +105,9 @@ p { line-height: 1.6; }
 .offer-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .personal-reason { padding: 12px; border-radius: 14px; background: var(--surface-2); color: var(--muted); line-height: 1.5; }
 .personal-reason b { color: var(--text); }
+.mission-box { display: grid; gap: 6px; padding: 14px; border: 1px solid #bfdbfe; border-radius: 16px; background: #eff6ff; color: var(--primary-dark); }
+.progress-head, .mission-metrics { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 14px; font-weight: 700; }
+.progress { height: 10px; overflow: hidden; border-radius: 999px; background: var(--surface-2); }
+.progress i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--primary), var(--green)); }
 .offer .primary { width: 100%; }
 @media (max-width: 860px) { .header { grid-template-columns: 1fr; justify-items: start; padding: 14px 18px; } .menu { justify-content: flex-start; flex-wrap: wrap; } .main { width: min(100% - 24px, 1180px); padding-top: 20px; } .landing, .auth-page, .two-columns, .stats { grid-template-columns: 1fr; } .landing-text { padding: 28px; min-height: auto; } .page-title { align-items: flex-start; flex-direction: column; } }

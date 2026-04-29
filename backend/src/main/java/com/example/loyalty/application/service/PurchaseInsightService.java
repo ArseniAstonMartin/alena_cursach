@@ -78,6 +78,22 @@ public class PurchaseInsightService {
         return "Сертификат выдан на " + category + ", потому что вы почти не покупали эту категорию. Это персональная рекомендация расширить покупки.";
     }
 
+    public int buyerRating(PurchaseProfile profile) {
+        int spendScore = Math.min(45, profile.totalSpent().intValue() / 20);
+        int frequencyScore = Math.min(25, profile.purchaseCount() * 4);
+        int diversityScore = Math.min(20, profile.categories().size() * 7);
+        int recencyScore = profile.lastPurchaseAt() == null ? 0 : Math.max(0, 10 - (int) Math.min(10, Duration.between(profile.lastPurchaseAt(), OffsetDateTime.now()).toDays()));
+        return Math.min(100, spendScore + frequencyScore + diversityScore + recencyScore);
+    }
+
+    public String buyerRatingLabel(PurchaseProfile profile) {
+        int rating = buyerRating(profile);
+        if (rating >= 80) return "Platinum";
+        if (rating >= 55) return "Gold";
+        if (rating >= 30) return "Silver";
+        return "Start";
+    }
+
     public BigDecimal averageCheck(PurchaseProfile profile) {
         if (profile.purchaseCount() == 0) return BigDecimal.ZERO;
         return profile.totalSpent().divide(BigDecimal.valueOf(profile.purchaseCount()), 2, RoundingMode.HALF_UP);
