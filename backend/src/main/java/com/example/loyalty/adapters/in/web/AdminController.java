@@ -72,6 +72,37 @@ public class AdminController {
         return jdbcTemplate.query("select id, name, category from merchants order by name", (rs, rowNum) -> new AdminMerchantDto(rs.getLong("id"), rs.getString("name"), rs.getString("category")));
     }
 
+    @GetMapping("/categories")
+    public List<AdminCategoryDto> categories() {
+        return jdbcTemplate.query("select code, display_name, description, cashback_percent, strategic_priority, mission_multiplier, active from product_categories order by strategic_priority desc, code", (rs, rowNum) -> new AdminCategoryDto(rs.getString("code"), rs.getString("display_name"), rs.getString("description"), rs.getBigDecimal("cashback_percent"), rs.getInt("strategic_priority"), rs.getBigDecimal("mission_multiplier"), rs.getBoolean("active")));
+    }
+
+    @PostMapping("/categories")
+    public AdminCategoryDto createCategory(@Valid @RequestBody CategoryRequest request) {
+        String code = request.code().trim().toUpperCase();
+        jdbcTemplate.update("insert into product_categories(code, display_name, description, cashback_percent, strategic_priority, mission_multiplier, active) values (?, ?, ?, ?, ?, ?, ?)", code, request.displayName(), request.description(), request.cashbackPercent(), request.strategicPriority(), request.missionMultiplier(), request.active());
+        jdbcTemplate.update("insert into reward_rules(category, cashback_percent, description, active) values (?, ?, ?, ?) on conflict (category) do update set cashback_percent = excluded.cashback_percent, description = excluded.description, active = excluded.active", code, request.cashbackPercent(), request.description(), request.active());
+        return categoryByCode(code);
+    }
+
+    @PutMapping("/categories/{code}")
+    public AdminCategoryDto updateCategory(@PathVariable String code, @Valid @RequestBody CategoryRequest request) {
+        String normalized = code.trim().toUpperCase();
+        int updated = jdbcTemplate.update("update product_categories set display_name = ?, description = ?, cashback_percent = ?, strategic_priority = ?, mission_multiplier = ?, active = ? where code = ?", request.displayName(), request.description(), request.cashbackPercent(), request.strategicPriority(), request.missionMultiplier(), request.active(), normalized);
+        if (updated == 0) throw new BusinessRuleViolationException("Category not found");
+        jdbcTemplate.update("insert into reward_rules(category, cashback_percent, description, active) values (?, ?, ?, ?) on conflict (category) do update set cashback_percent = excluded.cashback_percent, description = excluded.description, active = excluded.active", normalized, request.cashbackPercent(), request.description(), request.active());
+        return categoryByCode(normalized);
+    }
+
+    @DeleteMapping("/categories/{code}")
+    public void deleteCategory(@PathVariable String code) {
+        String normalized = code.trim().toUpperCase();
+        int deleted = jdbcTemplate.update("delete from product_categories where code = ? and not exists (select 1 from products where category = ?)", normalized, normalized);
+        if (deleted == 0) throw new BusinessRuleViolationException("Category is used by products or does not exist");
+        jdbcTemplate.update("delete from reward_rules where category = ?", normalized);
+    }
+
+
     @GetMapping("/products")
     public List<AdminProductDto> products() {
         return jdbcTemplate.query("""
@@ -83,13 +114,15 @@ public class AdminController {
 
     @PostMapping("/products")
     public AdminProductDto createProduct(@Valid @RequestBody ProductRequest request) {
-        Long id = jdbcTemplate.queryForObject("insert into products(merchant_id, name, category, price) values (?, ?, ?, ?) returning id", Long.class, request.merchantId(), request.name(), request.category(), request.price());
+        ensureCategory(request.category());
+        Long id = jdbcTemplate.queryForObject("insert into products(merchant_id, name, category, price) values (?, ?, ?, ?) returning id", Long.class, request.merchantId(), request.name(), request.category().trim().toUpperCase(), request.price());
         return productById(id);
     }
 
     @PutMapping("/products/{id}")
     public AdminProductDto updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
-        int updated = jdbcTemplate.update("update products set merchant_id = ?, name = ?, category = ?, price = ? where id = ?", request.merchantId(), request.name(), request.category(), request.price(), id);
+        ensureCategory(request.category());
+        int updated = jdbcTemplate.update("update products set merchant_id = ?, name = ?, category = ?, price = ? where id = ?", request.merchantId(), request.name(), request.category().trim().toUpperCase(), request.price(), id);
         if (updated == 0) throw new BusinessRuleViolationException("Product not found");
         return productById(id);
     }
@@ -98,6 +131,17 @@ public class AdminController {
     public void deleteProduct(@PathVariable Long id) {
         int deleted = jdbcTemplate.update("delete from products where id = ? and not exists (select 1 from purchase_items where product_id = ?)", id, id);
         if (deleted == 0) throw new BusinessRuleViolationException("Product is used in purchases or does not exist");
+    }
+
+
+    private AdminCategoryDto categoryByCode(String code) {
+        return jdbcTemplate.queryForObject("select code, display_name, description, cashback_percent, strategic_priority, mission_multiplier, active from product_categories where code = ?", (rs, rowNum) -> new AdminCategoryDto(rs.getString("code"), rs.getString("display_name"), rs.getString("description"), rs.getBigDecimal("cashback_percent"), rs.getInt("strategic_priority"), rs.getBigDecimal("mission_multiplier"), rs.getBoolean("active")), code);
+    }
+
+    private void ensureCategory(String category) {
+        Boolean exists = jdbcTemplate.query("select active from product_categories where code = ?", rs -> rs.next() ? rs.getBoolean("active") : null, category.trim().toUpperCase());
+        if (exists == null) throw new BusinessRuleViolationException("Create category before adding products");
+        if (!exists) throw new BusinessRuleViolationException("Category is disabled");
     }
 
     private AdminProductDto productById(Long id) {
@@ -115,7 +159,9 @@ public class AdminController {
     public record AdminUserDto(Long id, String fullName, String email, CustomerSegment segment, int pointsBalance, int purchasesCount, BigDecimal totalSpent, OffsetDateTime createdAt) {}
     public record AdminMerchantDto(Long id, String name, String category) {}
     public record AdminProductDto(Long id, Long merchantId, String merchantName, String name, String category, BigDecimal price) {}
+    public record AdminCategoryDto(String code, String displayName, String description, BigDecimal cashbackPercent, int strategicPriority, BigDecimal missionMultiplier, boolean active) {}
     public record ProductRequest(@NotNull Long merchantId, @NotBlank String name, @NotBlank String category, @NotNull @Min(0) BigDecimal price) {}
+    public record CategoryRequest(@NotBlank String code, @NotBlank String displayName, @NotBlank String description, @NotNull @Min(0) BigDecimal cashbackPercent, int strategicPriority, @NotNull @Min(0) BigDecimal missionMultiplier, boolean active) {}
     public record SegmentRequest(@NotNull CustomerSegment segment) {}
     public record PointsAdjustmentRequest(int points, @NotBlank String reason) {}
 }

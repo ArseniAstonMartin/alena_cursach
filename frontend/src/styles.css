@@ -51,6 +51,9 @@ p { line-height: 1.6; }
 .form { display: grid; gap: 16px; }
 .form label { display: grid; gap: 7px; color: var(--muted); font-weight: 700; }
 .form .primary { width: 100%; margin-top: 4px; }
+.form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.checkbox { display: flex !important; grid-template-columns: none !important; align-items: center; gap: 10px !important; }
+.checkbox input { width: auto; }
 .alert { padding: 14px 16px; border-radius: 16px; margin: 16px 0; font-weight: 600; }
 .alert a { text-decoration: underline; }
 .alert.error { color: var(--red); background: #fef2f2; border: 1px solid #fecaca; }

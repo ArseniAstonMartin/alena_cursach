@@ -20,3 +20,5 @@ export type AdminUser = { id: number; fullName: string; email: string; segment: 
 export type AdminMerchant = { id: number; name: string; category: string };
 export type AdminProduct = { id: number; merchantId: number; merchantName: string; name: string; category: string; price: number };
 export type ProductPayload = { merchantId: number; name: string; category: string; price: number };
+export type AdminCategory = { code: string; displayName: string; description: string; cashbackPercent: number; strategicPriority: number; missionMultiplier: number; active: boolean };
+export type CategoryPayload = { code: string; displayName: string; description: string; cashbackPercent: number; strategicPriority: number; missionMultiplier: number; active: boolean };

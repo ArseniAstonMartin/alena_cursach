@@ -30,7 +30,12 @@ public class RewardCalculationService {
     }
 
     private BigDecimal cashbackRate(String category) {
-        return jdbcTemplate.query("select cashback_percent from reward_rules where category = ? and active = true", rs -> rs.next() ? rs.getBigDecimal(1) : BigDecimal.valueOf(5), category);
+        return jdbcTemplate.query("""
+            select cashback_percent from product_categories where code = ? and active = true
+            union all
+            select cashback_percent from reward_rules where category = ? and active = true
+            limit 1
+            """, rs -> rs.next() ? rs.getBigDecimal(1) : BigDecimal.valueOf(5), category, category);
     }
 
     private BigDecimal segmentMultiplier(CustomerSegment segment) {

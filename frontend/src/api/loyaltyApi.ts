@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { AdminMerchant, AdminProduct, AdminStats, AdminUser, Balance, Certificate, LoyaltyProgram, Offer, Page, Product, ProductPayload, Purchase, PurchaseProfile, Recommendation, Redemption, RewardTransaction, TokenResponse } from '../types/domain';
+import type { AdminCategory, AdminMerchant, AdminProduct, AdminStats, AdminUser, Balance, Certificate, LoyaltyProgram, Offer, Page, Product, CategoryPayload, ProductPayload, Purchase, PurchaseProfile, Recommendation, Redemption, RewardTransaction, TokenResponse } from '../types/domain';
 
 export type RegisterPayload = { fullName: string; email: string; password: string };
 
@@ -28,3 +28,7 @@ export const updateAdminProduct = async (id: number, payload: ProductPayload) =>
 export const deleteAdminProduct = async (id: number) => (await api.delete(`/admin/products/${id}`)).data;
 export const updateAdminUserSegment = async (id: number, segment: string) => (await api.patch(`/admin/users/${id}/segment`, { segment })).data;
 export const adjustAdminUserPoints = async (id: number, points: number, reason: string) => (await api.post(`/admin/users/${id}/points`, { points, reason })).data;
+export const adminCategories = async () => (await api.get<AdminCategory[]>('/admin/categories')).data;
+export const createAdminCategory = async (payload: CategoryPayload) => (await api.post<AdminCategory>('/admin/categories', payload)).data;
+export const updateAdminCategory = async (code: string, payload: CategoryPayload) => (await api.put<AdminCategory>(`/admin/categories/${code}`, payload)).data;
+export const deleteAdminCategory = async (code: string) => (await api.delete(`/admin/categories/${code}`)).data;

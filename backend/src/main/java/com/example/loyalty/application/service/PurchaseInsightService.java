@@ -7,14 +7,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.OffsetDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class PurchaseInsightService {
-    private static final Set<String> STRATEGIC_CATEGORIES = Set.of("GROCERY", "BOOKS", "SPORT");
     private final JdbcTemplate jdbcTemplate;
 
     public PurchaseInsightService(JdbcTemplate jdbcTemplate) { this.jdbcTemplate = jdbcTemplate; }
@@ -60,13 +57,33 @@ public class PurchaseInsightService {
 
     public String recommendedCertificateCategory(PurchaseProfile profile) {
         if (profile.purchaseCount() == 0) return "ANY";
-        return STRATEGIC_CATEGORIES.stream()
-            .min(Comparator.comparing(category -> profile.categories().stream()
-                .filter(stat -> stat.category().equals(category))
-                .map(CategoryStat::spent)
-                .findFirst()
-                .orElse(BigDecimal.ZERO)))
-            .orElse("ANY");
+        return jdbcTemplate.query("""
+            select pc.code
+            from product_categories pc
+            left join (
+                select p.category, coalesce(sum(pi.quantity * pi.unit_price),0) as spent
+                from purchases pu
+                join purchase_items pi on pi.purchase_id = pu.id
+                join products p on p.id = pi.product_id
+                where pu.customer_id in (select id from customers order by id limit 100000)
+                group by p.category
+            ) global_stats on global_stats.category = pc.code
+            where pc.active = true
+            order by (
+                select coalesce(sum(stat.spent),0)
+                from (values %s) as stat(category, spent)
+                where stat.category = pc.code
+            ) asc, pc.strategic_priority desc, coalesce(global_stats.spent,0) desc
+            limit 1
+            """.formatted(categoryValues(profile)), rs -> rs.next() ? rs.getString("code") : "ANY");
+    }
+
+    private String categoryValues(PurchaseProfile profile) {
+        if (profile.categories().isEmpty()) return "('NONE', 0::numeric)";
+        return profile.categories().stream()
+            .map(stat -> "('" + stat.category().replace("'", "''") + "', " + stat.spent() + "::numeric)")
+            .reduce((left, right) -> left + "," + right)
+            .orElse("('NONE', 0::numeric)");
     }
 
     public String certificateReason(PurchaseProfile profile, String category) {

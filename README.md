@@ -51,6 +51,8 @@ Demo credentials:
 20. Redeem points into discount certificates with confirmation codes.
 21. View certificate wallet and certificate statuses.
 22. Apply an active certificate to a purchase.
+23. Admin creates and tunes product categories.
+24. Admin creates, edits and deletes products inside categories.
 23. Admin product CRUD.
 24. Admin customer list, segment editing and manual point adjustments.
 25. Admin platform statistics dashboard.
@@ -71,6 +73,8 @@ Demo credentials:
 - Redeemed certificates are category-bound by purchase history: by default, a certificate is issued for an underdeveloped strategic category, not the strongest one, so the business can grow cross-category behavior.
 - Redeemed certificates are stored in the customer's wallet with `ACTIVE`, `USED` or `EXPIRED` status.
 - A purchase can apply one active certificate only to a matching category; the purchase stores gross amount, discount amount, final amount and certificate code.
+- Product categories are managed separately in `product_categories`; each category has cashback percent, strategic priority, mission multiplier and active flag.
+- Category settings influence reward accrual, strategic certificate category selection and mission difficulty/reward mechanics.
 
 ## Architecture notes
 
