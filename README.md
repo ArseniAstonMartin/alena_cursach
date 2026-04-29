@@ -58,7 +58,9 @@ Demo credentials:
 - Activated offers add fixed bonus points when their category matches a purchase.
 - Personalized offer ranking is based on purchase history: favorite categories, category spend, purchase count, average check, total spend, frequency and last purchase date.
 - The customer purchase profile endpoint exposes the behavior report used by the personalization module.
-- Each offer is a mission with status (`AVAILABLE`, `CLAIMED`, `USED`), required buyer rating, average-check growth target, progress percent, next-step instructions and a business goal.
+- Each offer is a mission with status (`AVAILABLE`, `CLAIMED`, `USED`), required buyer rating, progress percent, next-step instructions and a business goal.
+- Mission types vary by customer history and category: average-check growth, purchase-count goals, frequency/reactivation goals and multi-condition missions.
+- Mission rewards scale with difficulty: easy tasks receive smaller bonuses, medium tasks receive larger bonuses, and hard multi-condition tasks receive the largest bonuses.
 - Offer bonuses are not free: the customer must accept the mission and then complete the target purchase behavior before points are awarded.
 - Every purchase reward is stored in `purchase_reward_breakdowns` with an explanation.
 - Points can be redeemed through `redemption_orders`; the current rule is 10 points = 1 discount unit, minimum 50 points.

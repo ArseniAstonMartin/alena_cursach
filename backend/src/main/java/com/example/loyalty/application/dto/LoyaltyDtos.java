@@ -13,7 +13,7 @@ public final class LoyaltyDtos {
     private LoyaltyDtos() {}
     public record BalanceDto(Long customerId, int pointsBalance, CustomerSegment segment) {}
     public record RewardTransactionDto(Long id, RewardTransactionType type, int points, String reason, OffsetDateTime createdAt) {}
-    public record OfferDto(Long id, String title, String description, String targetCategory, int bonusPoints, LocalDate validUntil, int personalizationScore, String personalizationReason, String status, String nextStep, String missionType, BigDecimal baselineValue, BigDecimal targetValue, BigDecimal currentValue, int progressPercent, int requiredRating, String businessGoal) {}
+    public record OfferDto(Long id, String title, String description, String targetCategory, int bonusPoints, LocalDate validUntil, int personalizationScore, String personalizationReason, String status, String nextStep, String missionType, String missionTitle, String conditionSummary, String difficulty, String metricLabel, BigDecimal baselineValue, BigDecimal targetValue, BigDecimal currentValue, int progressPercent, int requiredRating, String businessGoal) {}
     public record RecommendationDto(String title, String description, String source) {}
     public record RedemptionRequest(@Min(50) int points, @NotBlank String rewardName, String targetCategory) {}
     public record RedemptionDto(int pointsSpent, BigDecimal discountAmount, int remainingBalance, String confirmationCode, String rewardName, String targetCategory, String personalizationReason) {}

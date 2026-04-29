@@ -16,10 +16,10 @@ export function OffersPage() {
         <div className="offer-top"><div className="score">rating {offer.personalizationScore}</div><span className={`status ${locked ? 'expired' : offer.status.toLowerCase()}`}>{locked ? 'LOCKED' : offer.status}</span></div>
         <h3>{offer.title}</h3>
         <p>{offer.description}</p>
-        <div className="mission-box"><b>Задание</b><span>{offer.nextStep}</span></div>
+        <div className="mission-box"><b>{offer.missionTitle}</b><span>{offer.conditionSummary}</span><small>{offer.nextStep}</small></div>
         <div className="progress-head"><span>Прогресс</span><b>{offer.progressPercent}%</b></div>
         <div className="progress"><i style={{ width: `${Math.min(100, Math.max(0, offer.progressPercent))}%` }} /></div>
-        <div className="mission-metrics"><span>Сейчас: {Number(offer.currentValue).toFixed(0)} ₽</span><span>Цель: {Number(offer.targetValue).toFixed(0)} ₽</span></div>
+        <div className="mission-metrics"><span>{offer.metricLabel}: {Number(offer.currentValue).toFixed(0)}</span><span>Цель: {Number(offer.targetValue).toFixed(0)}</span><span>Сложность: {offer.difficulty}</span></div>
         <div className="personal-reason"><b>Почему вам:</b> {offer.personalizationReason}</div>
         <div className="personal-reason"><b>Польза бизнесу:</b> {offer.businessGoal}</div>
         <div className="offer-meta"><span>{offer.targetCategory}</span><b>+{offer.bonusPoints} баллов</b></div>
